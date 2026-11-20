@@ -6,6 +6,10 @@ A CLI to manage entries in `/etc/hosts`.
 
 Manage `/etc/hosts` entries without an editor or typing `sudo` for each change.
 
+## Preview
+
+<img src="docs/assets/preview.png" alt="hm" width="700" />
+
 ## Installation
 
 ### Requirements
