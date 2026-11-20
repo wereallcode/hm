@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup show active-toolchain
+      - run: make check-linux
+
+  plan:
+    name: Release Plan
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      release: ${{ steps.plan.outputs.new_release_published == 'true' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Plan release
+        id: plan
+        uses: cycjimmy/semantic-release-action@v8.1.4
+        with:
+          dry_run: true
+          semantic_version: 25.0.9
+          extra_plugins: |
+            @semantic-release/exec@7.1.0
+            @semantic-release/git@10.0.1
+            conventional-changelog-conventionalcommits@9.3.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # The release binary needs Apple Silicon macOS, so this runs only for releases.
+  release:
+    name: macOS Checks and Release
+    needs: plan
+    if: needs.plan.outputs.release == 'true'
+    runs-on: macos-15
+    concurrency:
+      group: github-release
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: rustup show active-toolchain
+      - run: make check
+      - name: Test privileged authorization
+        timeout-minutes: 5
+        run: bash scripts/tests/authorization-e2e.sh
+      - name: Release
+        uses: cycjimmy/semantic-release-action@v8.1.4
+        with:
+          semantic_version: 25.0.9
+          extra_plugins: |
+            @semantic-release/exec@7.1.0
+            @semantic-release/git@10.0.1
+            conventional-changelog-conventionalcommits@9.3.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+
+# CI runs the macOS checks only for releases, so run them before every push.
+printf 'Running make check before push...\n'
+make check

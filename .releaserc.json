@@ -1,0 +1,40 @@
+{
+  "branches": ["master"],
+  "tagFormat": "v${version}",
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "bash scripts/prepare-release.sh ${nextRelease.version}"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["Cargo.toml", "Cargo.lock"],
+        "message": "chore: release ${nextRelease.version}"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": ["release/hm-v*-aarch64-apple-darwin.tar.gz", "release/SHA256SUMS"],
+        "successComment": false,
+        "failComment": false,
+        "releasedLabels": false
+      }
+    ]
+  ]
+}

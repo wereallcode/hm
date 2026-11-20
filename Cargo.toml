@@ -1,0 +1,36 @@
+[package]
+name = "hm"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.85"
+description = "A CLI to manage entries in /etc/hosts."
+license = "MIT"
+repository = "https://github.com/wereallcode/hm"
+authors = ["wereallcode"]
+publish = false
+
+[features]
+default = ["cli"]
+cli = ["dep:clap", "dep:serde_json"]
+
+[[bin]]
+name = "hm"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[[test]]
+name = "cli"
+required-features = ["cli"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"], optional = true }
+libc = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", optional = true }
+tempfile = "3"
+unicode-width = "0.2"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
