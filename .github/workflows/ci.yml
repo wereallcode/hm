@@ -54,7 +54,7 @@ jobs:
     name: macOS Checks and Release
     needs: plan
     if: needs.plan.outputs.release == 'true'
-    runs-on: macos-15
+    runs-on: macos-latest
     concurrency:
       group: github-release
       cancel-in-progress: false
