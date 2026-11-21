@@ -1,4 +1,7 @@
-/target/
-/dist/
-/release/
+# folders
+target
+dist
+release
+
+# files
 .DS_Store
